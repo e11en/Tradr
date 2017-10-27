@@ -45,3 +45,10 @@ html, body {
 .mat-card-full-width {
     margin: 2em;
 }
+
+@media (max-width: 600px){
+    .mat-card-header {
+        margin-left: -16px !important;
+        margin-right: -16px !important;
+    }
+}
