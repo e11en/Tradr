@@ -9,15 +9,17 @@ import { HttpModule } from '@angular/http';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
 
-import { CoreModule } from './core/core.module';
-import { AppRoutingModule } from './app-routing.module';
 
-import { ElectronService } from './providers/electron.service';
+import { CoreModule } from './core/core.module';
+import { AppRoutingModule, RoutableComponents } from './app-routing.module';
+
+import { ElectronService } from './services/electron.service';
+import { CoinbaseService } from './services/coinbase.service';
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent
+    RoutableComponents
   ],
   imports: [
     BrowserModule,
@@ -26,7 +28,7 @@ import { ElectronService } from './providers/electron.service';
     AppRoutingModule,
     CoreModule
   ],
-  providers: [ElectronService],
+  providers: [ElectronService, CoinbaseService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
