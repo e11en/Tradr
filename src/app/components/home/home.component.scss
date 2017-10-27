@@ -1,17 +1,20 @@
-.container {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@import '../../../style/_variables';
 
-  background: url(../../../assets/background.jpg) no-repeat center fixed;
-  -webkit-background-size: cover; /* pour anciens Chrome et Safari */
-  background-size: cover; /* version standardisée */
+.header-panel {
+  padding-bottom: 0;
 
-  .title {
-    color: white;
-    margin:0;
-    padding:50px 20px;
+  .header-title-wrapper {
+    width: 100%;
   }
 
+  .header-menu {
+    position: absolute;
+    right: 0.6em;
+    top: 0.6em;    
+
+    :hover {
+      cursor: pointer;
+      color: $primary-darker;
+    }
+  }
 }

@@ -1,0 +1,47 @@
+@import '~@angular/material/prebuilt-themes/deeppurple-amber.css';
+
+@import '_variables';
+
+/*
+ * Global styles
+ */
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%; 
+    background-color: $base;
+}
+
+.btn-success {
+    background-color: $success;
+    color: $base !important;
+}
+
+.btn-error {
+    background-color: $error;
+    color: $base !important;
+}
+
+.mat-card-header {
+    margin-top: -24px !important;
+    margin-left: -24px !important;
+    margin-right: -24px !important;
+    padding-top: 20px;
+    padding-left: 15px;
+    padding-right: 24px;    
+    background-color: $primary;
+    color: $base;
+}
+
+.mat-card-title {
+    font-size: 2em !important;
+}
+
+.mat-card-content {
+    margin-top: 1em;
+}
+
+.mat-card-full-width {
+    margin: 2em;
+}
