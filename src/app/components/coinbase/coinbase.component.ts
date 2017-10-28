@@ -14,7 +14,7 @@ export class CoinbaseComponent implements OnInit {
   constructor(private coinbaseService: CoinbaseService) { }
 
   ngOnInit() {
-    this._accounts = this.coinbaseService.getAccountsService();
+    this._accounts = this.coinbaseService.getAccounts();
   }
 
 }
