@@ -9,11 +9,12 @@ import { CoinbaseService } from '../../services/coinbase.service';
 })
 export class CoinbaseComponent implements OnInit {
 
-  private _accounts: any = this.coinbaseService.getAccounts();
+  private _accounts: any;
 
   constructor(private coinbaseService: CoinbaseService) { }
 
   ngOnInit() {
+    this._accounts = this.coinbaseService.getAccountsService();
   }
 
 }

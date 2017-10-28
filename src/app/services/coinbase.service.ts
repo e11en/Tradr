@@ -8,11 +8,13 @@ export class CoinbaseService {
     private _client: any;
 
     constructor() {
-        var coinbase = require('coinbase');
-        var _client   = new coinbase.Client({'apiKey': COINBASE_API_KEY, 'apiSecret': COINBASE_API_SECRET});
+        
     }
 
-    getAccounts = () => {
+    getAccountsService = () => {
+        var coinbase = require('coinbase');
+        this._client   = new coinbase.Client({'apiKey': COINBASE_API_KEY, 'apiSecret': COINBASE_API_SECRET});
+
         this._client.getAccounts({}, function(err, accounts) {
             accounts.forEach(function(acct) {
               console.log('my bal: ' + acct.balance.amount + ' for ' + acct.name);
