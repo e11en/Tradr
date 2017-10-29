@@ -1,0 +1,13 @@
+<mat-card class="mat-card-full-width" *ngFor="let account of _coinbaseInstance.accounts">
+    <mat-card-header>
+        <mat-card-title>{{account.name}}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        Balance: {{account.balance.currency}} {{account.balance.amount}}
+        Native Balance: {{account.nativebalance.currency}} {{account.nativebalance.amount}}
+    </mat-card-content>
+    <mat-card-actions>
+        <button class="btn-success" mat-button>BUY</button>
+        <button class="btn-error" mat-button>SELL</button>
+    </mat-card-actions>
+</mat-card>

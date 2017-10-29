@@ -5,10 +5,8 @@ import { HomeComponent } from './components/home/home.component';
 import { CoinbaseComponent } from './components/coinbase/coinbase.component';
 
 const routes: Routes = [
-    // { path: '', component: HomeComponent },
-    // { path: 'coinbase', component: CoinbaseComponent }    
-
-    { path: '', component: CoinbaseComponent }
+    { path: '', component: HomeComponent },
+    { path: 'coinbase', component: CoinbaseComponent }    
 ];
 
 // This way we don't have to declare these double in the app.module.ts
