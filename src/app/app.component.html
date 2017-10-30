@@ -1,9 +1,11 @@
 <mat-card class="header-panel">
     <mat-card-header>
       <mat-card-title class="header-title-wrapper">
-        <span class="header-title">Tradr</span>
+        <span class="header-title"><a routerLinkActive="router-link-active" [routerLink]="['/']">Tradr</a></span>
         <div class="header-menu">
-          <mat-icon>menu</mat-icon>
+            <mat-icon (click)="toggleMenu()" class="btn-menu" *ngIf="menuState == 'out'">menu</mat-icon>
+            <mat-icon (click)="toggleMenu()" class="btn-menu btn-menu-close" *ngIf="menuState == 'in'">close</mat-icon>            
+            <app-menu [@slideInOut]="menuState"></app-menu>
         </div>
       </mat-card-title>
     </mat-card-header>

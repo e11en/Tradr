@@ -1,6 +1,6 @@
-import { CoinbaseInstance } from '../../models/coinbase.model';
 import { Component, OnInit } from '@angular/core';
 
+import { CoinbaseInstance, CoinbaseAccount } from '../../models/coinbase.model';
 import { CoinbaseService } from '../../services/coinbase.service';
 
 @Component({
@@ -18,7 +18,7 @@ export class CoinbaseComponent implements OnInit {
   ngOnInit() {
     this._coinbaseInstance = new CoinbaseInstance();
 
-    this.coinbaseService.getAccounts((accounts) => {
+    this.coinbaseService.getAccounts((accounts: CoinbaseAccount[]) => {
       console.log(accounts);
         //this._coinbaseInstance.Accounts = accounts;
     });

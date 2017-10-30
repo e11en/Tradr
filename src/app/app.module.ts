@@ -7,8 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 
 import { AppComponent } from './app.component';
-import { HomeComponent } from './components/home/home.component';
-
+import { MenuComponent } from './components/menu/menu.component';
 
 import { CoreModule } from './core/core.module';
 import { AppRoutingModule, RoutableComponents } from './app-routing.module';
@@ -19,6 +18,7 @@ import { CoinbaseService } from './services/coinbase.service';
 @NgModule({
   declarations: [
     AppComponent,
+    MenuComponent,
     RoutableComponents
   ],
   imports: [
@@ -29,6 +29,7 @@ import { CoinbaseService } from './services/coinbase.service';
     CoreModule
   ],
   providers: [ElectronService, CoinbaseService],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
 })
 export class AppModule { }

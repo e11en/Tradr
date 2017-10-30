@@ -14,7 +14,29 @@
 
     :hover {
       cursor: pointer;
-      color: $primary-darker;
+      color: darken($base, 20%);
     }
+  }
+
+  a {
+    color: $base;
+  }
+
+  a:hover {
+    color: darken($base, 20%);
+  }
+}
+
+.btn-menu {
+  position:absolute;
+  z-index: 9999;
+  right: 5px;
+}
+
+.btn-menu-close {
+  color: $primary;
+
+  :hover {
+    color: lighten($primary, 20%);
   }
 }
