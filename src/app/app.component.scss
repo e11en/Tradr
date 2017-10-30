@@ -29,12 +29,13 @@
 
 .btn-menu {
   position:absolute;
-  z-index: 9999;
   right: 5px;
 }
 
 .btn-menu-close {
+  z-index: 9999;
   color: $primary;
+  transition: .5s ease-in-out all;
 
   :hover {
     color: lighten($primary, 20%);
