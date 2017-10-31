@@ -1,4 +1,5 @@
 export class CoinbaseAccount {
+    public Id: string;
     public Balance: { 
         amount: string,
         currency: string

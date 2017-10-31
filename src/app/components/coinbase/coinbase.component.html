@@ -1,6 +1,12 @@
 <h1>Coinbase</h1>
 
-<mat-card class="mat-card-full-width" *ngFor="let account of _coinbaseInstance.accounts">
+<div *ngIf="isAuthenticating">
+    <mat-spinner></mat-spinner>
+</div>
+
+<span>{{coinbaseStatus}}</span>
+
+<!-- <mat-card class="mat-card-full-width" *ngFor="let account of coinbaseInstance.Accounts">
     <mat-card-header>
         <mat-card-title>{{account.name}}</mat-card-title>
     </mat-card-header>
@@ -12,4 +18,4 @@
         <button class="btn-success" mat-button>BUY</button>
         <button class="btn-error" mat-button>SELL</button>
     </mat-card-actions>
-</mat-card>
+</mat-card> -->
