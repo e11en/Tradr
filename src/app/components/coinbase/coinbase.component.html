@@ -6,16 +6,20 @@
 
 <span>{{coinbaseStatus}}</span>
 
-<!-- <mat-card class="mat-card-full-width" *ngFor="let account of coinbaseInstance.Accounts">
+<mat-card class="mat-card-full-width" *ngFor="let account of coinbaseInstance.Accounts">
     <mat-card-header>
-        <mat-card-title>{{account.name}}</mat-card-title>
+        <mat-card-title>{{account.Name}}</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-        Balance: {{account.balance.currency}} {{account.balance.amount}}
-        Native Balance: {{account.nativebalance.currency}} {{account.nativebalance.amount}}
+        <p>
+            Balance: {{account.Balance.currency}} {{account.Balance.amount}} 
+        </p>
+        <p>
+            Native Balance: {{account.NativeBalance.currency}} {{account.NativeBalance.amount}}
+        </p>
     </mat-card-content>
     <mat-card-actions>
         <button class="btn-success" mat-button>BUY</button>
         <button class="btn-error" mat-button>SELL</button>
     </mat-card-actions>
-</mat-card> -->
+</mat-card>

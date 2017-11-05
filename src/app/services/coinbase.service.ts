@@ -149,8 +149,11 @@ export class CoinbaseService {
         if(!this.client) this.createNewClient();
 
         this.client.getAccounts({}, (err, accounts) => {
-            console.log('response data: ', accounts); // TODO: Remove this after testing
-            callback(accounts);
+            let coinbaseAccounts = [];
+            accounts.forEach(account => {
+                coinbaseAccounts.push(new CoinbaseAccount(account));
+            });
+            callback(coinbaseAccounts);
         });
     }
 

@@ -6,7 +6,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent implements OnInit {
-
+  // TODO: Hide menu when clicked on link or outside of div
   constructor() { }
 
   ngOnInit() {
