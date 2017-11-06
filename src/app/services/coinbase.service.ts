@@ -1,6 +1,7 @@
-import { Injectable, EventEmitter, ErrorHandler } from '@angular/core';
+import { Injectable, ErrorHandler } from '@angular/core';
 import { Http, Headers } from '@angular/http';
 import { remote } from 'electron';
+import { Subject }    from 'rxjs/Subject';
 
 import { COINBASE_CLIENT_ID, COINBASE_API_SECRET, COINBASE_REDIRECT_URL } from '../../api.keys';
 
@@ -33,16 +34,18 @@ export class CoinbaseService {
         refresh_token: string,
         scope: string
     }; // Do we want to create a model for this?
+    private authenticated = new Subject<boolean>();
 
-    public authenticatedChange: EventEmitter<void>;
+    public authenticated$ = this.authenticated.asObservable();
     public isAuthenticated: boolean;
 
     constructor(http: Http) {
-        this.authenticatedChange = new EventEmitter();
         this.http = http;
+    }
 
+    public authenticate() {
         if (!this.accessObject && !this.accessObjectPresent()) {
-            this.isAuthenticated = false;
+            this.authenticated.next(false);
             const webPreferences = {
                 nodeIntegration: false
               }
@@ -53,14 +56,18 @@ export class CoinbaseService {
         }
     }
 
+    private setAuthenticated() {
+        this.authenticated.next(true);
+        this.isAuthenticated = true;
+    }
+
     private accessObjectPresent(): boolean {
         return localStorage.getItem("coinbase_access_object") !== null;
     }
 
     private setAccessObjectFromLocalStorage() {
         this.accessObject = JSON.parse(localStorage.getItem("coinbase_access_object"));
-        this.isAuthenticated = true;
-        this.authenticatedChange.complete();
+        this.setAuthenticated();
     }
 
     // Used example https://github.com/joaogarin/angular-electron/blob/master/src/app/services/authentication.ts
@@ -135,8 +142,7 @@ export class CoinbaseService {
                     scope: body.scope
                 };
                 localStorage.setItem("coinbase_access_object", JSON.stringify(this.accessObject));
-                this.isAuthenticated = true;
-                this.authenticatedChange.complete();
+                this.setAuthenticated();
             },
             err => console.log(err), () => console.log('Authentication Complete')
         );

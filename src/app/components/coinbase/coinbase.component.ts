@@ -18,26 +18,26 @@ export class CoinbaseComponent implements OnInit {
 
   ngOnInit() {
     this.coinbaseInstance = new CoinbaseInstance();
-    this.coinbaseStatus = "Nothing to see here...";
+    this.coinbaseStatus = "Not logged in";
 
-    if(!this.coinbaseService.authenticatedChange) {
-      this.showLoginPage();
-    } else {
+    if(this.coinbaseService.isAuthenticated) {
       this.coinbaseStatus = "You are already logged in!";
+    } 
+    else {
+      this.coinbaseService.authenticated$.subscribe(authenticated => {
+        if(authenticated) {
+          this.isAuthenticating = false;
+          this.coinbaseStatus = "You are now logged in!";
+        }
+  
+        //this.getCurrentBuyPrice(); // TODO: Remove this after testing
+      });
+
+      this.isAuthenticating = true;
+      this.coinbaseService.authenticate();
     }
   }
 
-  showLoginPage() {
-    this.isAuthenticating = true;
-    this.coinbaseService.showAuthWindow();
-
-    this.coinbaseService.authenticatedChange.subscribe(() => {
-      this.isAuthenticating = false;
-      this.coinbaseStatus = "You are now logged in!";
-
-      this.getCurrentBuyPrice(); // TODO: Remove this after testing
-    });
-  }
 
   getAccountData() {
     if (!this.coinbaseService.isAuthenticated) return;
