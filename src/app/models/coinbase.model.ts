@@ -1,5 +1,3 @@
-import { Currency } from './currency.model';
-
 export class CoinbaseAccount {
     public Balance: { 
         amount: string,
