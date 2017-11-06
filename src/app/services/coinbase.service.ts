@@ -1,13 +1,14 @@
 import { Injectable, EventEmitter, ErrorHandler } from '@angular/core';
 import { Http, Headers } from '@angular/http';
+import { remote } from 'electron';
 
-import { COINBASE_CLIENT_ID, COINBASE_API_SECRET } from '../../api.keys';
+import { COINBASE_CLIENT_ID, COINBASE_API_SECRET, COINBASE_REDIRECT_URL } from '../../api.keys';
 
 import { CoinbaseInstance, CoinbaseAccount } from '../models/coinbase.model';
 
 const coinbase = require('coinbase');
-const remote = coinbase.remote;
 const BrowserWindow = remote.BrowserWindow;
+const localStorage = window.localStorage;
 
 export enum CryptoCurrencyType {
     Bitcoin = "BTC",
@@ -37,27 +38,38 @@ export class CoinbaseService {
     public isAuthenticated: boolean;
 
     constructor(http: Http) {
-        this.isAuthenticated = true;
         this.authenticatedChange = new EventEmitter();
         this.http = http;
 
-        if (!this.accessObject) {
+        if (!this.accessObject && !this.accessObjectPresent()) {
             this.isAuthenticated = false;
             const webPreferences = {
                 nodeIntegration: false
               }
             this.authWindow = new BrowserWindow({ width: 800, height: 600, show: false, webPreferences });
             this.showAuthWindow();
+        } else if (this.accessObjectPresent()) {
+            this.setAccessObjectFromLocalStorage();
         }
     }
 
+    private accessObjectPresent(): boolean {
+        return localStorage.getItem("coinbase_access_object") !== null;
+    }
+
+    private setAccessObjectFromLocalStorage() {
+        this.accessObject = JSON.parse(localStorage.getItem("coinbase_access_object"));
+        this.isAuthenticated = true;
+        this.authenticatedChange.complete();
+    }
+
     // Used example https://github.com/joaogarin/angular-electron/blob/master/src/app/services/authentication.ts
-    showAuthWindow() {
+    private showAuthWindow() {
         // Build the OAuth consent page URL
         const coinbaseUrl = "https://www.coinbase.com/oauth/authorize?";
         const responseType = "code";
         const clientId = COINBASE_CLIENT_ID;
-        const redirectUri = ""; // TODO: Do we need to redirect?
+        const redirectUri = COINBASE_REDIRECT_URL;
         const state =  this.guid();
         const scope = "wallet:accounts:read"; // TODO: Determine the permissions
 
@@ -70,25 +82,25 @@ export class CoinbaseService {
             this.handleCallback(url);
         });
     
-        this.authWindow.webContents.on('did-get-redirect-request', (event, oldUrl, newUrl) => {
-            this.handleCallback(newUrl);
-        });
-    
         // Reset the authWindow on close
         this.authWindow.on('close', function () {
+            console.log("Window closed");
             this.authWindow = null;
         }, false);
     }
 
     private handleCallback(url) {
+        // Don't proccess further if the redirect url isn't correct
+        if(!this.redirectUrlIsCorrect(url)) {
+            return;
+        }
+
         let raw_code = /code=([^&]*)/.exec(url) || null;
         let code = (raw_code && raw_code.length > 1) ? raw_code[1] : null;
         let error = /\?error=(.+)$/.exec(url);
     
-        if (code || error) {
-          // Close the browser if code found or error
-          this.authWindow.destroy();
-        }
+        // Close the browser
+        this.authWindow.destroy();
     
         // If there is a code, proceed to get token from Coinbase
         if (code) {
@@ -99,6 +111,10 @@ export class CoinbaseService {
         }
     }
 
+    private redirectUrlIsCorrect(url: string): boolean {
+        return url.substr(0, 24) === COINBASE_REDIRECT_URL;
+    }
+
     private requestToken(code) {
         this.http.post('https://api.coinbase.com/oauth/token', 
         { 
@@ -106,19 +122,19 @@ export class CoinbaseService {
             code: code,
             client_id: COINBASE_CLIENT_ID,
             client_secret: COINBASE_API_SECRET,
-            redirect_uri: "" // TODO: Is this needed?
+            redirect_uri: COINBASE_REDIRECT_URL
         })
         .subscribe(
             response => {
-                console.log(response);
-                // TODO: Do something to with the response data like:
+                const body = JSON.parse(response["_body"]);
                 this.accessObject = {
-                    access_token: response[0].access_token,
-                    token_type: response[0].token_type, 
-                    expires_in: response[0].expires_in,
-                    refresh_token: response[0].refresh_token,
-                    scope: response[0].scope
+                    access_token: body.access_token,
+                    token_type: body.token_type, 
+                    expires_in: body.expires_in,
+                    refresh_token: body.refresh_token,
+                    scope: body.scope
                 };
+                localStorage.setItem("coinbase_access_object", JSON.stringify(this.accessObject));
                 this.isAuthenticated = true;
                 this.authenticatedChange.complete();
             },
@@ -165,6 +181,17 @@ export class CoinbaseService {
             callback(obj.data.amount);
         });
     }
+
+    getSellPrice(currency: CurrencyType, callback: (price: string) => void) {
+        this.client.getSellPrice({
+            'currency': currency.valueOf()
+        }, function(err, obj) {
+            console.log('response data: ', obj.data); // TODO: Remove this after testing
+            callback(obj.data.amount);
+        });
+    }
+
+
 
     sell(account: CoinbaseAccount, currency: CryptoCurrencyType, amount: number) {
         // if(!this.client) this.createNewClient();
