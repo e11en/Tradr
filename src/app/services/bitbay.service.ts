@@ -3,6 +3,9 @@ import { Http, Headers } from '@angular/http';
 const CryptoJS = require("crypto-js");
 
 const API_ADDRESS = "https://bitbay.net/API/Trading/tradingApi.php";
+const localStorage = window.localStorage;
+const API_SECRET = localStorage.getItem("BITBAY_API_SECRET"); // TODO: Create and check this item
+const API_KEY = localStorage.getItem("BITBAY_API_KEY"); // TODO: Create and check this item
 
 @Injectable()
 export class BitBayService {
@@ -16,13 +19,12 @@ export class BitBayService {
     }
 
     private createAuthorizationHeader(params: any[]) : Headers {
-        const sign = CryptoJS.HmacSHA1(params, "KEY"); // TODO: Get the actual API_SECRET from the user some how
+        const sign = CryptoJS.HmacSHA1(params, API_SECRET);
 
-        let headers = new Headers();
-        headers.append('API-Key', 'KEY'); // TODO: Get the actual API-KEY from user some how
-        headers.append('API-Hash', sign);
-
-        return headers;
+        return new Headers([{
+            "API-Key": API_KEY,
+            "API-Hash": sign
+        }]);
     }
     
     private sendRequest(method: string, content: {}) {
@@ -39,5 +41,41 @@ export class BitBayService {
             data => { console.log(data); },
             err => { console.log(err); }
         );
+    }
+
+    public getAccountBalance(currency: string) {
+        return this.sendRequest("info", {currency: currency});
+    }
+
+    public placeOffer(params: {type: string, currency: string, amount: number, paymen_currency: string, rate: number}) {
+        return this.sendRequest("trade", params);
+    }
+
+    public cancelOffer(params: {id: string}) {
+        return this.sendRequest("cancel", params);
+    }
+
+    public checkOrderBook(params: {id: string}) {
+        return this.sendRequest("orderbook", params);
+    }
+
+    public listOrders(params: {limit?: number}) {
+        return this.sendRequest("orders", params);
+    }
+
+    public transferToWallet(params: {currency: string, quantity: number, address: string}) {
+        return this.sendRequest("transfer", params);
+    }
+
+    public withdraw(params: {currency: string, quantity: number, account: string, express: boolean, bic: string}) {
+        return this.sendRequest("withdraw ", params);
+    }
+
+    public getHistory(params: {currency: string, limit: number}) {
+        return this.sendRequest("history", params);
+    }
+
+    public getTransactionHistory(params: {market?: string}) {
+        return this.sendRequest("transactions", params);
     }
 }
