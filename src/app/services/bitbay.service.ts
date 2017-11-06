@@ -28,19 +28,19 @@ export class BitBayService {
     }
     
     private sendRequest(method: string, content: {}) {
-        let params = [{
-            "method": method,
-            "moment": new Date().getTime()
-        }];
-        let headers = this.createAuthorizationHeader(params);
-        headers.append('Content-Type', 'application/json');
+        // let params = [{
+        //     "method": method,
+        //     "moment": new Date().getTime()
+        // }];
+        // let headers = this.createAuthorizationHeader(params);
+        // headers.append('Content-Type', 'application/json');
 
-        return this.http.post(API_ADDRESS, JSON.stringify(content), {
-          headers: headers
-        }).map(res => res.json()).subscribe(
-            data => { console.log(data); },
-            err => { console.log(err); }
-        );
+        // return this.http.post(API_ADDRESS, JSON.stringify(content), {
+        //   headers: headers
+        // }).map(res => res.json()).subscribe(
+        //     data => { console.log(data); },
+        //     err => { console.log(err); }
+        // );
     }
 
     public getAccountBalance(currency: string) {
