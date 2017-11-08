@@ -252,16 +252,19 @@ export class CoinbaseService {
         });
     }
 
-    getBuyPrice(cryptoCurrency: CryptoCurrencyType, currency: CurrencyType, callback: (price: string) => void) {
+    getBuyPrice(cryptoCurrency: CryptoCurrencyType | string, currency: CurrencyType, callback: (price: string) => void) {
+        if(!this.client) this.createNewClient();
+
         this.client.getBuyPrice({
             'currencyPair': cryptoCurrency.valueOf() + '-' + currency.valueOf()
         }, function(err, obj) {
-            console.log('response data: ', obj.data); // TODO: Remove this after testing
             callback(obj.data.amount);
         });
     }
 
     getSellPrice(currency: CurrencyType, callback: (price: string) => void) {
+        if(!this.client) this.createNewClient();
+
         this.client.getSellPrice({
             'currency': currency.valueOf()
         }, function(err, obj) {
