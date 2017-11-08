@@ -4,6 +4,9 @@
     <mat-spinner></mat-spinner>
 </div>
 
+<button (click)="logoutCoinbase()" *ngIf="coinbaseService.isAuthenticated">Logout</button>
+<button (click)="loginCoinbase()" *ngIf="!coinbaseService.isAuthenticated">Login</button>
+
 <span>{{coinbaseStatus}}</span>
 
 <mat-card class="mat-card-full-width" *ngFor="let account of coinbaseInstance.Accounts">
@@ -14,7 +17,7 @@
         <p>
             Balance: {{account.Balance.currency}} {{account.Balance.amount}} 
         </p>
-        <p>
+        <p *ngIf="account.NativeBalance">
             Native Balance: {{account.NativeBalance.currency}} {{account.NativeBalance.amount}}
         </p>
     </mat-card-content>

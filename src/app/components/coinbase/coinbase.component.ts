@@ -18,26 +18,45 @@ export class CoinbaseComponent implements OnInit {
 
   ngOnInit() {
     this.coinbaseInstance = new CoinbaseInstance();
-    this.coinbaseStatus = "Not logged in";
 
     if(this.coinbaseService.isAuthenticated) {
       this.coinbaseStatus = "You are already logged in!";
-    } 
-    else {
-      this.coinbaseService.authenticated$.subscribe(authenticated => {
-        if(authenticated) {
-          this.isAuthenticating = false;
-          this.coinbaseStatus = "You are now logged in!";
-        }
-  
-        //this.getCurrentBuyPrice(); // TODO: Remove this after testing
-      });
-
-      this.isAuthenticating = true;
-      this.coinbaseService.authenticate();
+      this.getAccountData();
+    } else {
+      this.coinbaseStatus = "Not logged in";
     }
+    
+    this.coinbaseService.authenticated$.subscribe(authenticated => {
+      console.log("Event trigger: " + authenticated);
+
+      switch(authenticated) {
+        case "authenticating":
+              this.isAuthenticating = true;
+              break;
+        case "authenticated":
+              this.isAuthenticating = false;
+              this.coinbaseStatus = "You are now logged in!";
+              this.getAccountData();
+              break;
+        case "not_authenticated":
+              this.isAuthenticating = false;
+              break;
+        case "revoked_access":
+              this.isAuthenticating = false;
+              this.coinbaseStatus = "Access revoked";
+              break;
+      }
+    });
   }
 
+  logoutCoinbase() {
+    this.coinbaseService.revokeAccess();
+    this.coinbaseInstance.Accounts = null;
+  }
+
+  loginCoinbase(){
+    this.coinbaseService.authenticate();
+  }
 
   getAccountData() {
     if (!this.coinbaseService.isAuthenticated) return;
