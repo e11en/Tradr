@@ -23,15 +23,18 @@ export class CoinbaseAccount {
             };
             this.Id = account.id;
             this.Name = account.name;
-            this.NativeBalance = {
-                amount: account.native_balance.amount,
-                currency: account.native_balance.currency
-            };
             this.IsPrimary = account.primary;
             this.Resource = account.resource;
             this.ResourcePath = account.resource_path;
             this.Type = account.type;
             this.UpdatedAt = account.updated_at;
+
+            if(account.native_balance){
+                this.NativeBalance = {
+                    amount: account.native_balance.amount,
+                    currency: account.native_balance.currency
+                };
+            }
         }
     }
 }
