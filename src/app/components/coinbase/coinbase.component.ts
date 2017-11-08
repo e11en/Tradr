@@ -59,16 +59,12 @@ export class CoinbaseComponent implements OnInit {
   }
 
   getAccountData() {
-    if (!this.coinbaseService.isAuthenticated) return;
-
     this.coinbaseService.getAccounts((accounts: CoinbaseAccount[]) => {
       this.coinbaseInstance.Accounts = accounts;
     });
   }
 
   getCurrentBuyPrice() {
-    if (!this.coinbaseService.isAuthenticated) return;
-    
     this.coinbaseService.getBuyPrice(CryptoCurrencyType.Bitcoin, CurrencyType.Euro, (price: string) => {
       console.log("EUR to BTC price is", price);
     });
