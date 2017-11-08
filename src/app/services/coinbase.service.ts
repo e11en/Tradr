@@ -86,7 +86,7 @@ export class CoinbaseService {
 
         // Handle the response from Coinbase
         this.authWindow.webContents.on('will-navigate', (event, url) => {
-            this.handleCallback(url);
+            this.handleAuthCallback(url);
         });
     
         // Reset the authWindow on close
@@ -96,7 +96,7 @@ export class CoinbaseService {
         }, false);
     }
 
-    private handleCallback(url) {
+    private handleAuthCallback(url) {
         // Don't proccess further if the redirect url isn't correct
         if(!this.redirectUrlIsCorrect(url)) {
             return;
@@ -111,7 +111,7 @@ export class CoinbaseService {
     
         // If there is a code, proceed to get token from Coinbase
         if (code) {
-          this.requestToken(code);
+          this.requestAuthToken(code);
         } else if (error) {
           alert('Oops! Something went wrong and we couldn\'t' +
             'log you in using Coinbase. Please try again.');
@@ -122,15 +122,28 @@ export class CoinbaseService {
         return url.substr(0, 24) === COINBASE_REDIRECT_URL;
     }
 
-    private requestToken(code) {
-        this.http.post('https://api.coinbase.com/oauth/token', 
-        { 
+    private requestRefreshToken(refreshToken: string) {
+        this.requestToken({
+            grant_type: "refresh_token",
+            refresh_token: refreshToken
+        });
+    }
+
+    private requestAuthToken(code) {
+        this.requestToken({
             grant_type: "authorization_code",
             code: code,
+            redirect_uri: COINBASE_REDIRECT_URL
+        });
+    }
+
+    private requestToken(params: {}) {
+        params = Object.assign(params, {
             client_id: COINBASE_CLIENT_ID,
             client_secret: COINBASE_API_SECRET,
-            redirect_uri: COINBASE_REDIRECT_URL
-        })
+        });
+
+        this.http.post('https://api.coinbase.com/oauth/token', params)
         .subscribe(
             response => {
                 const body = JSON.parse(response["_body"]);
@@ -167,10 +180,12 @@ export class CoinbaseService {
         });
     }
 
+    /* API CALLS */
+
     getAccounts(callback: (accounts: CoinbaseAccount[]) => void) {
         if(!this.client) this.createNewClient();
 
-        this.client.getAccounts({}, (err, accounts) => {
+        this.client.getAccounts({}, (err, accounts) => {            
             let coinbaseAccounts = [];
             accounts.forEach(account => {
                 coinbaseAccounts.push(new CoinbaseAccount(account));
