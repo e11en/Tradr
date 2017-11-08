@@ -1,4 +1,4 @@
-import { Injectable, ErrorHandler } from '@angular/core';
+import { Injectable, ErrorHandler, ApplicationRef } from '@angular/core';
 import { Http, Headers } from '@angular/http';
 import { remote } from 'electron';
 import { Subject }    from 'rxjs/Subject';
@@ -34,31 +34,50 @@ export class CoinbaseService {
         refresh_token: string,
         scope: string
     }; // Do we want to create a model for this?
-    private authenticated = new Subject<boolean>();
+    private authenticated = new Subject<string>();
 
     public authenticated$ = this.authenticated.asObservable();
     public isAuthenticated: boolean;
 
-    constructor(http: Http) {
+    constructor(http: Http, private appRef:ApplicationRef) {
         this.http = http;
-    }
 
-    public authenticate() {
-        if (!this.accessObject && !this.accessObjectPresent()) {
-            this.authenticated.next(false);
-            const webPreferences = {
-                nodeIntegration: false
-              }
-            this.authWindow = new BrowserWindow({ width: 800, height: 600, show: false, webPreferences });
-            this.showAuthWindow();
-        } else if (this.accessObjectPresent()) {
+        if (this.accessObjectPresent()) {
             this.setAccessObjectFromLocalStorage();
         }
     }
 
-    private setAuthenticated() {
-        this.authenticated.next(true);
-        this.isAuthenticated = true;
+    public authenticate() {
+        if (!this.accessObject && !this.accessObjectPresent()) {
+            this.setAuthenticated("authenticating");
+            const webPreferences = {
+                nodeIntegration: false
+              }
+            console.log("Show auth window");
+            this.authWindow = new BrowserWindow({ width: 800, height: 600, show: false, webPreferences });
+            this.showAuthWindow();
+        } else if (this.accessObjectPresent()) {
+            this.setAccessObjectFromLocalStorage();
+        } else {
+            console.log("Fell in pit, why?");
+            console.log("accessObject: ", this.accessObject);
+            console.log("accessObjectPresent: ", this.accessObjectPresent());
+        }
+    }
+
+    private setAuthenticated(mode: string) {
+        this.authenticated.next(mode);
+
+        switch(mode) {
+            case "authenticated":
+                this.isAuthenticated = true;
+                break;
+            case "not_authenticated":
+            case "revoked_access":
+                this.isAuthenticated = false;
+        }
+        
+        this.appRef.tick();
     }
 
     private accessObjectPresent(): boolean {
@@ -67,7 +86,7 @@ export class CoinbaseService {
 
     private setAccessObjectFromLocalStorage() {
         this.accessObject = JSON.parse(localStorage.getItem("coinbase_access_object"));
-        this.setAuthenticated();
+        this.setAuthenticated("authenticated");
     }
 
     // Used example https://github.com/joaogarin/angular-electron/blob/master/src/app/services/authentication.ts
@@ -83,16 +102,18 @@ export class CoinbaseService {
         let authUrl = coinbaseUrl + "response_type=" + responseType + "&client_id=" + clientId + "&redirect_uri=" + redirectUri + "&state=" + state + "&scope=" + scope;
         this.authWindow.loadURL(authUrl);
         this.authWindow.show();
+        const that = this;
 
         // Handle the response from Coinbase
         this.authWindow.webContents.on('will-navigate', (event, url) => {
-            this.handleAuthCallback(url);
+            that.handleAuthCallback(url);
         });
     
         // Reset the authWindow on close
         this.authWindow.on('close', function () {
             console.log("Window closed");
-            this.authWindow = null;
+            that.setAuthenticated("not_authenticated"); 
+            that.accessObject = null;
         }, false);
     }
 
@@ -133,7 +154,8 @@ export class CoinbaseService {
         this.requestToken({
             grant_type: "authorization_code",
             code: code,
-            redirect_uri: COINBASE_REDIRECT_URL
+            redirect_uri: COINBASE_REDIRECT_URL,
+            scope: "wallet:accounts:read"
         });
     }
 
@@ -143,6 +165,7 @@ export class CoinbaseService {
             client_secret: COINBASE_API_SECRET,
         });
 
+        // TODO: Refactor this to use coinbase package
         this.http.post('https://api.coinbase.com/oauth/token', params)
         .subscribe(
             response => {
@@ -155,9 +178,10 @@ export class CoinbaseService {
                     scope: body.scope
                 };
                 localStorage.setItem("coinbase_access_object", JSON.stringify(this.accessObject));
-                this.setAuthenticated();
+                this.setAuthenticated("authenticated");
             },
-            err => console.log(err), () => console.log('Authentication Complete')
+            err => console.log(err), 
+            () => console.log('Authentication Complete')
         );
     }
 
@@ -180,12 +204,46 @@ export class CoinbaseService {
         });
     }
 
+    private handleError(error: any, callback: any) {
+        switch(error) {
+            case "ExpiredToken":
+                this.requestRefreshToken(this.accessObject.refresh_token);
+                break;
+            default:
+                console.log(error.name);
+                console.log(error.status);
+                console.log(error.message);
+                break;
+        }
+
+        callback();
+    }
+
     /* API CALLS */
+
+    revokeAccess() {
+        this.http.post('https://api.coinbase.com/oauth/revoke', {
+            "token": this.accessObject.access_token
+        })
+        .subscribe(
+            response => {
+                this.accessObject = null;
+                localStorage.removeItem("coinbase_access_object");
+                this.setAuthenticated("revoked_access");
+            },
+            err => console.log(err), 
+            () => console.log('Access revoked')
+        );
+    }
 
     getAccounts(callback: (accounts: CoinbaseAccount[]) => void) {
         if(!this.client) this.createNewClient();
 
-        this.client.getAccounts({}, (err, accounts) => {            
+        this.client.getAccounts({}, (err, accounts) => {
+            if(err) {
+                this.handleError(err, this.getAccounts(callback))
+            }
+
             let coinbaseAccounts = [];
             accounts.forEach(account => {
                 coinbaseAccounts.push(new CoinbaseAccount(account));
