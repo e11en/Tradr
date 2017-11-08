@@ -61,6 +61,19 @@ export class CoinbaseComponent implements OnInit {
   getAccountData() {
     this.coinbaseService.getAccounts((accounts: CoinbaseAccount[]) => {
       this.coinbaseInstance.Accounts = accounts;
+
+      this.coinbaseInstance.Accounts.forEach((account) => {
+        if(!account.NativeBalance) {
+          this.coinbaseService.getBuyPrice(account.Balance.currency, CurrencyType.Euro, (price) => {
+              account.NativeBalance = {
+                currency:  CurrencyType.Euro,
+                amount: (parseFloat(account.Balance.amount) * parseFloat(price)).toFixed(2).toString()
+              };
+          });
+        }
+      });
+
+     
     });
   }
 
